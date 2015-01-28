@@ -183,7 +183,7 @@ public class Tranny {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        out = out + instances.classAttribute().value((int) pred)+ "\n";
+        out = instances.classAttribute().value((int) pred);
 
         return out;
     }
