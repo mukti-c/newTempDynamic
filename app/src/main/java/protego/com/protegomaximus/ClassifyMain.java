@@ -13,7 +13,7 @@ import android.widget.Toast;
 
 public class ClassifyMain extends Activity implements View.OnClickListener{
     Button classify, eval;
-    public String out1;
+    public String out1, csvInstance;
     TextView filecon, textView;
     int counter = 0;
     @Override
@@ -32,7 +32,7 @@ public class ClassifyMain extends Activity implements View.OnClickListener{
             @Override
             public void onClick(View view) {
                 Tranny t1 = new Tranny();
-                String out = t1.classify();
+                String out = t1.classify(csvInstance);
                 filecon.setText(out);
             }
         });
