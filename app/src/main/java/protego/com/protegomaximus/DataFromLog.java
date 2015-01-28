@@ -23,16 +23,14 @@ public class DataFromLog {
     // Flags
     Flags FLAGS;
     // Checksum
-    int CHECKSUM;
+    //int CHECKSUM;
     // CheckedChecksum
     String CHECKSUM_DESC;
-    // Final Flag for KDD: Added here as it is needed in PastConnQueue.
-    String FLAG;
 
-    public String assignService () {
+    public static String assignService (DataFromLog data) {
         String temp, temp1;
-        temp = getService(this.PROTOCOL, this.SRC_PORT);
-        temp1 = getService(this.PROTOCOL, this.DEST_PORT);
+        temp = getService(data.PROTOCOL, data.SRC_PORT);
+        temp1 = getService(data.PROTOCOL, data.DEST_PORT);
         return ((temp.equals("other"))?temp1:temp);
     }
 

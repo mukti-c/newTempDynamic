@@ -12,6 +12,7 @@
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/Theme.AppCompat.Light.DarkActionBar" >
+
         <activity
             android:name=".App"
             android:label="@string/app_name" >
@@ -21,6 +22,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name" >
@@ -30,6 +32,7 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+
         <activity
             android:name=".ReadFile1"
             android:label="@string/app_name" >
@@ -39,6 +42,7 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+
         <activity
             android:name=".ClassifyMain"
             android:label="@string/app_name" >
@@ -48,22 +52,28 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+
         <activity
             android:name=".DisplayDataset"
             android:label="@string/title_activity_display_dataset" >
         </activity>
+
         <activity
             android:name=".DisplayModel"
             android:label="@string/title_activity_display_model" >
         </activity>
+
         <activity
             android:name=".DisplayLog"
             android:label="@string/title_activity_display_log" >
         </activity>
+
         <activity
             android:name=".DisplayExtractedFeatures"
             android:label="@string/title_activity_display_extracted_features" >
         </activity>
+
+        <service android:name=".ProcessDataService" />
     </application>
 
 </manifest>

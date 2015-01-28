@@ -2,13 +2,10 @@ package protego.com.protegomaximus;
 
 import android.os.Environment;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -22,12 +19,12 @@ import weka.core.converters.ArffLoader;
 
 public class Tranny {
 
-    String trainingSet = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + "kddreduced.arff";
+    static String trainingSet = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + "kddreduced.arff";
     //String csvFile = Environment.getExternalStorageDirectory().getAbsoluteFile() + File.separator + "connection.csv";
-    String modelFile = Environment.getExternalStorageDirectory().getAbsolutePath()  + File.separator + "model.txt";
-    Instances instances;
+    static String modelFile = Environment.getExternalStorageDirectory().getAbsolutePath()  + File.separator + "model.txt";
+    static Instances instances;
     //FilteredClassifier classifier = new FilteredClassifier();
-    AdaBoostM1 classifier = new AdaBoostM1();
+    static AdaBoostM1 classifier = new AdaBoostM1();
 
     public Tranny() {
 
@@ -111,7 +108,7 @@ public class Tranny {
     }
 
     //Classifies data
-    public String classify(String csv) {
+    public static String classify(String csv) {
 
         ObjectInputStream in;
         try {

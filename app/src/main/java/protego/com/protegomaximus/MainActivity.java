@@ -27,6 +27,7 @@ import android.widget.Toast;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.HashMap;
 
 import RootTools.RootTools;
 
@@ -49,7 +50,7 @@ public class MainActivity extends ActionBarActivity implements OnClickListener{
     DrawerLayout drawer;
     ListView drawerList;
     String[] choice;
-    ArrayAdapter<String> adapter;
+    HashMap<String, String> hashMap = new HashMap<String, String>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -132,11 +133,25 @@ public class MainActivity extends ActionBarActivity implements OnClickListener{
             @Override
             public void onClick(View v) {
                 try {
+                    // Create/Clear the CSV file
                     File file = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + "connection.csv");
                     FileWriter writer = new FileWriter(file, false);
                     writer.close();
-                    Intent extractIntent = new Intent("protego.com.protego.READFILE1");
-                    startActivity(extractIntent);
+
+                    // The hashMap that we'll get from Chani's code. HARDCODED FOR NOW.
+                    hashMap.put("TIMESTAMP", "0");
+                    hashMap.put("SRC_IP", "192.168.2.8");
+                    hashMap.put("SRC_PORT", "443");
+                    hashMap.put("DEST_IP", "192.168.2.8");
+                    hashMap.put("DEST_PORT", "45432");
+                    hashMap.put("LENGTH", "123");
+                    hashMap.put("PROTOCOL", "tcp");
+                    hashMap.put("CHECKSUM", "correct");
+                    DataParcel data = new DataParcel();
+                    data.hashMap = hashMap;
+                    Intent intent = new Intent(MainActivity.this, ProcessDataService.class);
+                    intent.putExtra("dataParcel", data);
+                    startService(intent);
                 } catch (IOException e) {
                     Toast.makeText(getApplicationContext(), "Cannot create file. Try again.", Toast.LENGTH_SHORT).show();
                 }
@@ -364,14 +379,10 @@ public class MainActivity extends ActionBarActivity implements OnClickListener{
         switch(v.getId()) {
             case R.id.startButton :
                 startTCPdump();
-
-
                 break;
 
             case R.id.stopButton:
                 stopTCPdump();
-
-
                 break;
         }
     }
