@@ -26,7 +26,6 @@ import android.widget.Toast;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.HashMap;
 
 public class MainActivity extends ActionBarActivity implements OnClickListener{
 
@@ -45,7 +44,6 @@ public class MainActivity extends ActionBarActivity implements OnClickListener{
     DrawerLayout drawer;
     ListView drawerList;
     String[] choice;
-    HashMap<String, String> hashMap = new HashMap<String, String>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -334,7 +332,7 @@ public class MainActivity extends ActionBarActivity implements OnClickListener{
                         .setNeutralButton("OK", null).show();
             default:
                 new AlertDialog.Builder(MainActivity.this).setTitle("Error")
-                        .setMessage("unkmown error")
+                        .setMessage("unknown error")
                         .setNeutralButton("OK", null).show();
         }
 
@@ -349,7 +347,6 @@ public class MainActivity extends ActionBarActivity implements OnClickListener{
 
             case R.id.stopButton:
                 stopTCPdump();
-                KDDConnection.createConnectionRecord(ProcessDataService.connSet);
                 Intent i = new Intent(this, ProcessDataService.class);
                 stopService(i);
                 break;

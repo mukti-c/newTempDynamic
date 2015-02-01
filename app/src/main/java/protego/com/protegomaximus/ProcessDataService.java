@@ -1,7 +1,8 @@
 package protego.com.protegomaximus;
 
-import android.app.IntentService;
+import android.app.Service;
 import android.content.Intent;
+import android.os.IBinder;
 import android.util.Log;
 
 import java.text.ParseException;
@@ -9,21 +10,42 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.TimeZone;
 
-/**
- * Created by muktichowkwale on 28/01/15.
- */
-
-public class ProcessDataService extends IntentService {
+public class ProcessDataService extends Service {
 
     private static final String TAG = "ProcessDataService";
     //private final static String filename = Environment.getExternalStorageDirectory().getAbsoluteFile() + File.separator + "tcpdump.pcap";
     //public final static String csvFile = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + "connection.csv";
-    public static Set<DataFromLog> connSet = null;
+    public Set<DataFromLog> connSet = null;
     public DataFromLog temp = null;
 
-    public ProcessDataService() {
-        super("ProcessDataService");
+    //public ProcessDataService() {
+        //super("ProcessDataService");
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        DataParcel dataParcel = (DataParcel) intent.getParcelableExtra("dataParcel");
+        Log.d(TAG, "Time started: " + System.nanoTime());
+        temp = getPacketData(dataParcel, new DataFromLog());
+        addToConnSet(temp, connSet);
+        Log.d(TAG, "Time finished: " + System.nanoTime());
+        return START_STICKY;
+    }
+
+    @Override
+    public IBinder onBind(Intent intent) {
+        return null;
+    }
+    //}
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Log.d ("DE", "destroy");
+        KDDConnection.createConnectionRecord(connSet);
+        connSet.clear();
+        GlobalVariables.clearVar();
     }
 
     @Override
@@ -32,14 +54,14 @@ public class ProcessDataService extends IntentService {
         connSet = new HashSet<DataFromLog>();
     }
 
-    @Override
+    /*@Override
     protected void onHandleIntent(Intent intent) {
         DataParcel dataParcel = (DataParcel) intent.getParcelableExtra("dataParcel");
         Log.d(TAG, "Time started: " + System.nanoTime());
         temp = getPacketData(dataParcel, new DataFromLog());
         addToConnSet(temp, connSet);
         Log.d(TAG, "Time finished: " + System.nanoTime());
-    }
+    }*/
 
     private void addToConnSet(DataFromLog data, Set<DataFromLog> connSet) {
         if (data.PROTOCOL != null && data.SERVICE != null && data.DEST_IP != null && data.SRC_IP != null) {
@@ -66,7 +88,7 @@ public class ProcessDataService extends IntentService {
                 } else {
                     GlobalVariables.endTime = data.TIMESTAMP;
                     CreateLogFile.logData.append(GetTime.getCurrentTime()+"Previous connection terminated\n");
-                    Log.d ("EEEStateHistory", GlobalVariables.stateHistory);
+                    Log.d("EEEStateHistory", GlobalVariables.stateHistory);
                     KDDConnection.createConnectionRecord(connSet);
                     CreateLogFile.logData.append(GetTime.getCurrentTime()+"Record for the terminated connection created\n");
                     connSet.clear();
@@ -88,6 +110,7 @@ public class ProcessDataService extends IntentService {
 
     private DataFromLog getPacketData(DataParcel dataParcel, DataFromLog data) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+        sdf.setTimeZone(TimeZone.getDefault());
         try{
             Date date = sdf.parse("1970-01-01 " + dataParcel.hashMap.get(1));
             data.TIMESTAMP = date.getTime();
