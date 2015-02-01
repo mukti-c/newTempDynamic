@@ -1,17 +1,12 @@
 package protego.com.protegomaximus;
 
-
 import android.app.Activity;
-import android.app.Notification;
-import android.app.NotificationManager;
 import android.content.Context;
-import android.content.SharedPreferences;
+import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Handler;
-import android.view.View;
-import android.widget.EditText;
-import android.widget.ProgressBar;
+import android.util.Log;
 import android.widget.TextView;
 
 import java.io.IOException;
@@ -21,7 +16,7 @@ public class TCPdumpHandler {
 
 
     private static final int defaultRefreshRate = 100;
-    private static final int defaultBufferSize = 4096;
+    private static final int defaultBufferSize = 80;
 
     // Your Main activity's ids for the View.
 
@@ -33,23 +28,13 @@ public class TCPdumpHandler {
 
     // Byte[] buffer's size.
     private int bufferSize = defaultBufferSize;
-
-    private boolean notificationEnabled = false;
     private boolean refreshingActive = false;
-
     private TCPdump tcpdump = null;
-
     private Handler isHandler = null;
-
     private Context mContext = null;
-    private SharedPreferences settings = null;
-    private NotificationManager nManager = null;
-    private Notification notification = null;
-
     private TextView outputText = null;
-    private View scroller = null;
-    private ProgressBar pbar = null;
-    private EditText params = null;
+    String checkBufferValue;
+    StringBuilder result = new StringBuilder();
 
     /**
      * This runnable is used for refreshing the TCPdump's process standard
@@ -60,7 +45,6 @@ public class TCPdumpHandler {
             try {
                 if ((tcpdump.getInputStream().available() > 0) == true) {
                     byte[] buffer = new byte[bufferSize];
-
                     try {
                         tcpdump.getInputStream().read(buffer, 0, bufferSize);
                     } catch (IOException e) {
@@ -71,11 +55,15 @@ public class TCPdumpHandler {
                     // Clears the screen if it's full.
                     if (outputText.length() + buffer.length >= bufferSize)
                         outputText.setText("");
-
-                    outputText.append(new String(buffer));
-
-                    // Forces the scrollbar to be at the bottom.
-
+                        outputText.append(new String(buffer));
+                        checkBufferValue= new String(buffer);
+                        DataParcel data = new DataParcel();
+                        data.hashMap = CreateHashObject.createObject(checkBufferValue);
+                        Intent intent = new Intent(mContext, ProcessDataService.class);
+                        intent.putExtra("dataParcel", data);
+                        mContext.startService(intent);
+                        Log.d ("LOG",checkBufferValue);
+                    result.append(new String(buffer));
                 }
             } catch (IOException e) {
                 stopRefreshing();
@@ -86,19 +74,12 @@ public class TCPdumpHandler {
     };
 
     public TCPdumpHandler(TCPdump tcpdump, Context mContext, Activity activity,
-                          boolean notificationEnabled) {
-
-
+                          StringBuilder result) {
         this.tcpdump = tcpdump;
         isHandler = new Handler();
-
-
         this.outputText = (TextView) activity.findViewById(outputId);
-
-
         this.mContext = mContext;
-
-
+        this.result=result;
     }
 
     /**
@@ -114,21 +95,15 @@ public class TCPdumpHandler {
      *         -4 Error when running the TCPdump command.<br>
      *         -5 Error when flushing the DataOutputStream.
      */
+
     public int start(String params) {
         int TCPdumpReturn;
         if ((TCPdumpReturn = tcpdump.start(params)) == 0) {
-
-
-                outputText.setText("standard output enabled");
-                startRefreshing();
-
-
-
-
+            outputText.setText("standard output enabled");
+            startRefreshing();
             return 0;
         } else
             return TCPdumpReturn;
-
     }
 
     /**
@@ -144,11 +119,11 @@ public class TCPdumpHandler {
      *         -6: Error when closing the shell.<br>
      *         -7: Error when waiting for the process to finish.
      */
+
     public int stop() {
         int TCPdumpReturn;
         if ((TCPdumpReturn = tcpdump.stop()) == 0) {
             stopRefreshing();
-
             return 0;
         } else
             return TCPdumpReturn;
@@ -157,6 +132,7 @@ public class TCPdumpHandler {
     /**
      * Starts refreshing the TextView.
      */
+
     private void startRefreshing() {
         if (!refreshingActive) {
             isHandler.post(updateOutputText);
@@ -167,14 +143,13 @@ public class TCPdumpHandler {
     /**
      * Stops refreshing the TextView.
      */
+
     private void stopRefreshing() {
         if (refreshingActive) {
             isHandler.removeCallbacks(updateOutputText);
             refreshingActive = false;
         }
     }
-
-
 
     /**
      * Sets the refreshRate value. refreshRate must be > 0.
@@ -184,6 +159,7 @@ public class TCPdumpHandler {
      * @return true if the new value has been set.<br>
      *         false if refreshRate hasn't been modified.
      */
+
     public boolean setRefreshRate(int refreshRate) {
         if ((refreshRate > 0) && (tcpdump.getProcessStatus() == false)) {
             this.refreshRate = refreshRate;
@@ -200,6 +176,7 @@ public class TCPdumpHandler {
      * @return true if the new value has been set.<br>
      *         false if bufferSize hasn't been modified.
      */
+
     public boolean setBufferSize(int bufferSize) {
         if ((bufferSize > 0) && (tcpdump.getProcessStatus() == false)) {
             this.bufferSize = bufferSize;
@@ -238,5 +215,4 @@ public class TCPdumpHandler {
      *
      * @return A string with the parameters.
      */
-
 }

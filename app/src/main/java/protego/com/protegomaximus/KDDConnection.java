@@ -98,9 +98,10 @@ public class KDDConnection {
     // Creates a connection
     public static void createConnectionRecord(Set<DataFromLog> logData) {
         KDDConnection newConn = new KDDConnection();
-        Log.d ("KDD", "Creating");
+        int duration;
         // TIMESTAMP is in milliseconds
-        newConn.duration = (int) ((GlobalVariables.endTime - GlobalVariables.startTime)/1000);
+        duration = (int) ((GlobalVariables.endTime - GlobalVariables.startTime)/1000);
+        newConn.duration = (duration >= 0)?duration:0;
 
         newConn.protocol = GlobalVariables.connProtocol;
         newConn.service = GlobalVariables.connService;
@@ -115,9 +116,8 @@ public class KDDConnection {
         for (DataFromLog temp1: logData) {
             newConn.src_bytes += (temp1.SRC_IP.equals(GlobalVariables.connSourceIP)) ? temp1.LENGTH : 0;
             newConn.dst_bytes += (temp1.DEST_IP.equals(GlobalVariables.connSourceIP)) ? temp1.LENGTH : 0;
-            newConn.wrong_fragment += (temp1.CHECKSUM_DESC != null && temp1.CHECKSUM_DESC.equals("correct")) ? 0 : 1;
-            //newConn.urgent += (temp1.FLAGS.URG) ? 1 : 0;
-            newConn.urgent += 0;
+            newConn.wrong_fragment += (temp1.CHECKSUM_DESC != null && temp1.CHECKSUM_DESC.equals("co")) ? 0 : 1;
+            newConn.urgent += (temp1.FLAGS.URG) ? 1 : 0;
         }
 
         // Create ReducedKDDConnection object and pass & add to last100Conn and lastTwoSec
@@ -132,8 +132,8 @@ public class KDDConnection {
         newConn = PastConnQueue.calculateTrafficFeatures(tempConn, newConn, GlobalVariables.last100Conn);
         newConn = LastTwoSecQueue.calculateTrafficFeatures(tempConn, newConn, GlobalVariables.lastTwoSec);
         //writeToARFF(ReadFile1.csvFile, newConn);
-        //Log.d("RECORD", newConn.convertRecord());
-        Log.d("CLASSIFY", Tranny.classify(newConn.convertRecord()));
+        Log.d("EEERecord", newConn.convertRecord());
+        Log.d("EEEClassify", Tranny.classify(newConn.convertRecord()));
         GlobalVariables.last100Conn.addConn(tempConn);
         GlobalVariables.lastTwoSec.addConn(tempConn);
     }

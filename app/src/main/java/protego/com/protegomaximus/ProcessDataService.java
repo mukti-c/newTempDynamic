@@ -4,6 +4,9 @@ import android.app.IntentService;
 import android.content.Intent;
 import android.util.Log;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -16,7 +19,7 @@ public class ProcessDataService extends IntentService {
     private static final String TAG = "ProcessDataService";
     //private final static String filename = Environment.getExternalStorageDirectory().getAbsoluteFile() + File.separator + "tcpdump.pcap";
     //public final static String csvFile = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + "connection.csv";
-    public Set<DataFromLog> connSet = null;
+    public static Set<DataFromLog> connSet = null;
     public DataFromLog temp = null;
 
     public ProcessDataService() {
@@ -51,7 +54,6 @@ public class ProcessDataService extends IntentService {
                 GlobalVariables.endTime = data.TIMESTAMP;
                 GlobalVariables.findStateHistory(data.FLAGS, data.SRC_IP);
                 connSet.add(data);
-                KDDConnection.createConnectionRecord(connSet);
                 CreateLogFile.logData.append(GetTime.getCurrentTime()+"New Connection set created.\nOngoing Connection.\n");
             } else {
                 if (GlobalVariables.connProtocol.equals(data.PROTOCOL)
@@ -64,6 +66,7 @@ public class ProcessDataService extends IntentService {
                 } else {
                     GlobalVariables.endTime = data.TIMESTAMP;
                     CreateLogFile.logData.append(GetTime.getCurrentTime()+"Previous connection terminated\n");
+                    Log.d ("EEEStateHistory", GlobalVariables.stateHistory);
                     KDDConnection.createConnectionRecord(connSet);
                     CreateLogFile.logData.append(GetTime.getCurrentTime()+"Record for the terminated connection created\n");
                     connSet.clear();
@@ -84,16 +87,48 @@ public class ProcessDataService extends IntentService {
     }
 
     private DataFromLog getPacketData(DataParcel dataParcel, DataFromLog data) {
-        data.TIMESTAMP = Long.parseLong(dataParcel.hashMap.get("TIMESTAMP"));
-        data.SRC_IP = dataParcel.hashMap.get("SRC_IP");
-        data.DEST_IP = dataParcel.hashMap.get("DEST_IP");
-        data.SRC_PORT = Integer.parseInt(dataParcel.hashMap.get("SRC_PORT"));
-        data.DEST_PORT = Integer.parseInt(dataParcel.hashMap.get("DEST_PORT"));
-        data.PROTOCOL = dataParcel.hashMap.get("PROTOCOL");
-        data.LENGTH = Integer.parseInt(dataParcel.hashMap.get("LENGTH"));
-        data.CHECKSUM_DESC = dataParcel.hashMap.get("CHECKSUM");
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+        try{
+            Date date = sdf.parse("1970-01-01 " + dataParcel.hashMap.get(1));
+            data.TIMESTAMP = date.getTime();
+        } catch (ParseException p) {
+            data.TIMESTAMP = 0;
+        }
+        data.SRC_IP = dataParcel.hashMap.get(5);
+        data.DEST_IP = dataParcel.hashMap.get(6);
+        data.SRC_PORT = Integer.parseInt(dataParcel.hashMap.get(7));
+        data.DEST_PORT = Integer.parseInt(dataParcel.hashMap.get(8));
+        data.PROTOCOL = dataParcel.hashMap.get(3).toLowerCase();
+        if (dataParcel.hashMap.get(4) != null && dataParcel.hashMap.get(11) != null) {
+            data.LENGTH = Integer.parseInt(dataParcel.hashMap.get(4)) + Integer.parseInt(dataParcel.hashMap.get(11));
+        } else {
+            if (dataParcel.hashMap.get(4) == null && dataParcel.hashMap.get(11) != null) {
+                data.LENGTH = Integer.parseInt(dataParcel.hashMap.get(11));
+            } else if (dataParcel.hashMap.get(4) != null && dataParcel.hashMap.get(11) == null) {
+                data.LENGTH = Integer.parseInt(dataParcel.hashMap.get(4));
+            } else {
+                data.LENGTH = 0;
+            }
+        }
+        data.CHECKSUM_DESC = dataParcel.hashMap.get(10);
         data.SERVICE = (data.PROTOCOL.equals("icmp"))? DataFromLog.assignIcmpService(data.PROTOCOL, data.SRC_PORT, data.DEST_PORT):DataFromLog.assignService(data);
-        data.FLAGS = null;
+        data.FLAGS = extractFlags(dataParcel.hashMap.get(9));
         return data;
+    }
+
+    private Flags extractFlags (String flag) {
+        Flags f = new Flags();
+        if (flag.equals("")) {
+            f.none = true;
+            return f;
+        } else {
+            f.FIN = flag.contains("F");
+            f.ACK = flag.contains(".");
+            f.PSH = flag.contains("P");
+            f.RST = flag.contains("R");
+            f.URG = flag.contains("U");
+            f.SYN = flag.contains("S");
+        }
+        return f;
     }
 }

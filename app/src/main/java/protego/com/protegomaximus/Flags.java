@@ -1,8 +1,6 @@
 package protego.com.protegomaximus;
 
 public class Flags {
-    boolean CWR = false;
-    boolean ECE = false;
     boolean URG = false;
     boolean ACK = false;
     boolean PSH = false;
@@ -10,5 +8,4 @@ public class Flags {
     boolean SYN = false;
     boolean FIN = false;
     boolean none;
-    boolean ORIGINATOR; // If the packet is from the originator, then T. Else, F.
 }

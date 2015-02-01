@@ -5,13 +5,9 @@ import android.os.Parcelable;
 
 import java.util.HashMap;
 
-/**
- * Created by muktichowkwale on 28/01/15.
- */
-
 public class DataParcel implements Parcelable {
     // All the variables included in the Parcel.
-    public HashMap<String, String> hashMap = new HashMap<String, String>();
+    public HashMap<Integer, String> hashMap = new HashMap<Integer, String>();
 
     // No arguments constructor
     public DataParcel() {}

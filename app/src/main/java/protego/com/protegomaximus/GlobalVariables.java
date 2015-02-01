@@ -30,9 +30,7 @@ public class GlobalVariables {
     public static void findStateHistory  (Flags flags, String srcIP) {
         // Referred to: https://www.bro.org/sphinx/_downloads/main20.bro
         // If the packet is from the originator, then the letter is in upper-case. Else, lower-case.
-        if (flags == null) {
-            stateHistory += "F";
-        } else if (flags.FIN) {
+        if (flags.FIN) {
             // with FIN bit
             stateHistory += (srcIP.equals(connSourceIP))?"F":"f";
         } else if (flags.SYN) {

@@ -3,8 +3,6 @@ package protego.com.protegomaximus;
 import android.app.AlertDialog;
 import android.content.Context;
 
-import java.io.IOException;
-
 public class RootAccess{
 
     public static boolean hasRoot= false;
@@ -39,7 +37,6 @@ public class RootAccess{
             }
         } catch (Exception e)
         {
-            e.printStackTrace();
         }
 
         showAlertBox("Cannot acquire the root access .Either phone is not rooted or root permission not granted",context);
@@ -55,7 +52,7 @@ public class RootAccess{
 
         ScriptRunner runner = new ScriptRunner(script, result);
 
-        if (scriptStarted) {
+
 
             runner.start();
 
@@ -75,18 +72,7 @@ public class RootAccess{
                 return runner.exitValue;
             }
             return runner.exitValue;
-        }
 
-        else
-        {
-            try {
-                Runtime.getRuntime().exec("killall tcpdump");
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        return 0;
 
 
     }

@@ -19,7 +19,6 @@ import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -29,21 +28,17 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
 
-import RootTools.RootTools;
-
 public class MainActivity extends ActionBarActivity implements OnClickListener{
 
     public static StringBuilder result = new StringBuilder();
     // public static StringBuilder tcpdump= new StringBuilder();
     TextView textView;
-    EditText parameters;
+    StringBuilder parameters= new StringBuilder();
     Button startButton,stopButton, extractButton, btnClassify;
     String m_chosenDir = "";
     boolean m_newFolderEnabled = true;
     int button_running =0;
     int chosen_dir_changed =0;
-    RootMethods rootMethods ;
-    RootRunnable rootRunnable;
     TCPdump tcpdump;
     TCPdumpHandler tcpDumpHandler;
 
@@ -58,14 +53,13 @@ public class MainActivity extends ActionBarActivity implements OnClickListener{
         setContentView(R.layout.activity_main);
 
         initialize();
-        installTcpdumpBinary();
-        parameters.setText("-i wlan0 -p -U -w " + Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + "tcpdump.pcap");
+        parameters.append(" -nvv|tr -d ')[],'|awk '{if($14==\"TCP\" && $22==\"cksum\" && $24==\"(correct\"){printf \"%s %s %s %4s %20s %20s %s %s %4s\\n\",$1, substr($12,0,2),$14,$17,$18, substr($20,0,index($20,\":\")-1),$21,substr($24,index($24,\"(\")+1,2),substr($25,index($25,\"(\")+1,2)}else if($14==\"TCP\" && $22==\"cksum\" && $24==\"(incorrect\"){printf \"%s %s %s %4s %20s %20s %s %s %4s\\n\",$1, substr($12,0,2),$14,$17,$18, substr($20,0,index($20,\":\")-1),$21,substr($24,index($24,\"(\")+1,2),substr($27,index($27,\"(\")+1,2)}else if($14==\"TCP\" && $22!=\"cksum\"){next}else if($14==\"UDP\" && $23 ~ /[0-9]+/){printf \"%s %s %s %4s %20s %20s %s %s %4s\\n\",$1, substr($12,0,2),$14,$17,$18, substr($20,0,index($20,\":\")-1),\".\",\"co\",$23}else if($14==\"UDP\" && $23!~ /[0-9]+/){printf \"%s %s %s %4s %20s %20s %s %s %4s\\n\",$1, substr($12,0,2),$14,$17,$18, substr($20,0,index($20,\":\")-1),\".\",\"in\",\"0\"}else if($14==\"UDP\" && $23!~ /[0-9]+/ && $21==\"udp sum ok\"){printf \"%s %s %s %4s %20s %20s %s %s %4s\\n\",$1, substr($12,0,2),$14,$17,$18,substr($20,0,index($20,\":\")-1),\".\",\"co\",\"0\"}}'");
         //tcpdump.append("/data/data/protego.com.tcpdump/files/tcpdump -nvv >"+m_chosenDir+"/tcpdump.pcap");
         // RootAccess.hasRoot(this);
         //RootAccess.runAsRootUser(tcpdump.toString(), result, 1000);
         tcpdump = new TCPdump();
         // Creating a TCPdump handler for the TCPdump object created after.
-        tcpDumpHandler = new TCPdumpHandler(tcpdump, this, this, true);
+        tcpDumpHandler = new TCPdumpHandler(tcpdump, this, this,result);
 
         choice = getResources().getStringArray(R.array.drawer_items);
         drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -119,14 +113,11 @@ public class MainActivity extends ActionBarActivity implements OnClickListener{
         setContentView(R.layout.activity_main);
 
         textView= (TextView) findViewById(R.id.textView);
-        parameters = (EditText) findViewById(R.id.editTextView);
         startButton= (Button) findViewById(R.id.startButton);
         stopButton= (Button) findViewById(R.id.stopButton);
         btnClassify = (Button) findViewById(R.id.btnClassify);
         stopButton.setOnClickListener(this);
         startButton.setOnClickListener(this);
-        rootMethods= new RootMethods();
-        rootRunnable = new RootRunnable(this,this,rootMethods);
         extractButton = (Button) findViewById(R.id.btnExtractFeatures);
         extractButton.setOnClickListener(new View.OnClickListener() {
 
@@ -137,21 +128,6 @@ public class MainActivity extends ActionBarActivity implements OnClickListener{
                     File file = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + "connection.csv");
                     FileWriter writer = new FileWriter(file, false);
                     writer.close();
-
-                    // The hashMap that we'll get from Chani's code. HARDCODED FOR NOW.
-                    hashMap.put("TIMESTAMP", "0");
-                    hashMap.put("SRC_IP", "192.168.2.8");
-                    hashMap.put("SRC_PORT", "443");
-                    hashMap.put("DEST_IP", "192.168.2.8");
-                    hashMap.put("DEST_PORT", "45432");
-                    hashMap.put("LENGTH", "123");
-                    hashMap.put("PROTOCOL", "tcp");
-                    hashMap.put("CHECKSUM", "correct");
-                    DataParcel data = new DataParcel();
-                    data.hashMap = hashMap;
-                    Intent intent = new Intent(MainActivity.this, ProcessDataService.class);
-                    intent.putExtra("dataParcel", data);
-                    startService(intent);
                 } catch (IOException e) {
                     Toast.makeText(getApplicationContext(), "Cannot create file. Try again.", Toast.LENGTH_SHORT).show();
                 }
@@ -168,18 +144,12 @@ public class MainActivity extends ActionBarActivity implements OnClickListener{
         });
     }
 
-    public void installTcpdumpBinary() {
+    public  void startTCPdump1() {
 
-        if(RootTools.installBinary(this,R.raw.tcpdump,"tcpdump")==false)
-            showAlert(this,"extraction error");
-    }
-
-    public  void startTCPdump1()
-    {
         // RootAccess.scriptStarted=true;
         if(button_running==0  || chosen_dir_changed==1) {
             if(m_chosenDir.isEmpty()) {
-                // tcpdump.setLength(0);
+                //tcpdump.setLength(0);
                 //tcpdump.append("/data/data/protego.com.tcpdump/files/tcpdump -nvv >mnt/sdcard/tcpdump.pcap");
                 Toast.makeText(this,"No directory chosen ..File stored in sdcard",Toast.LENGTH_SHORT).show();
             }
@@ -187,7 +157,7 @@ public class MainActivity extends ActionBarActivity implements OnClickListener{
                 //tcpdump.setLength(0);
                 //tcpdump.append("/data/data/protego.com.tcpdump/files/tcpdump -nvv >" + m_chosenDir + "/tcpdump.pcap");
             }
-            if (rootRunnable.start(tcpdump.toString())==0){//RootAccess.runAsRootUser(tcpdump.toString(), result, 1000) == 0) {
+            if (RootAccess.runAsRootUser(tcpdump.toString(), result, 1000) == 0) {
 
                 showAlert(this, "Result:" + result.toString());
                 textView.setText(tcpdump.toString());
@@ -199,8 +169,10 @@ public class MainActivity extends ActionBarActivity implements OnClickListener{
             button_running=1;
             chosen_dir_changed=0;
         }
-        else {
-            if (rootRunnable.start(tcpdump.toString())==0/*RootAccess.runAsRootUser(tcpdump.toString(), result, 1000) == 0*/) {
+        else
+        {
+            if (RootAccess.runAsRootUser(tcpdump.toString(), result, 1000) == 0) {
+
                 showAlert(this, "Result:" + result.toString());
                 textView.setText(tcpdump.toString());
             } else {
@@ -208,11 +180,14 @@ public class MainActivity extends ActionBarActivity implements OnClickListener{
                 textView.setText(tcpdump.toString());
             }
         }
+
     }
 
     public void stopTCPdump1() {
         //rootMethods.stop();
-        switch(rootRunnable.stop()) {
+
+       /*switch(rootRunnable.stop())
+        {
             case 0: showAlert(this, "Everything is fine");
                 break;
             case -1: showAlert(this,"I/O exception in root");
@@ -229,11 +204,12 @@ public class MainActivity extends ActionBarActivity implements OnClickListener{
             case -6:
                 showAlert(this,"problem in rootRunnable stop");
                 break;
-        }
-        //RootAccess.scriptStarted=false;
-        //RootAccess.runAsRootUser("killall tcpdump",result,1000);
-        showAlert(this, result.toString());
+        }*/
 
+
+        RootAccess.scriptStarted=false;
+        RootAccess.runAsRootUser("killall tcpdump",result,1000);
+        showAlert(this, result.toString());
     }
 
     public void showAlert(Context context, String message) {
@@ -262,18 +238,19 @@ public class MainActivity extends ActionBarActivity implements OnClickListener{
 
     private void startTCPdump() {
         if (tcpDumpHandler.checkNetworkStatus()) {
-              CreateLogFile.logData.append("Connected to the network");
-            switch (tcpDumpHandler.start(parameters.getText().toString())) {
+
+            switch (tcpDumpHandler.start(parameters.toString())) {
                 case 0:
                     Toast.makeText(MainActivity.this, "tcpdump started",
                             Toast.LENGTH_SHORT).show();
-                    CreateLogFile.logData.append(GetTime.getCurrentTime()+"Tcpdump capture started\n");
+                    AlertDialog.Builder alert= new AlertDialog.Builder(this);
+                    alert.setMessage(result.toString());
+                    //alert.show();
                     break;
                 case -1:
                     Toast.makeText(MainActivity.this,
                             "tcpdump already started",
                             Toast.LENGTH_SHORT).show();
-                    CreateLogFile.logData.append("Tcpdump capture already started\n");
                     break;
                 case -2:
                     new AlertDialog.Builder(MainActivity.this)
@@ -281,42 +258,36 @@ public class MainActivity extends ActionBarActivity implements OnClickListener{
                             .setMessage(
                                     "Device not rooted")
                             .setNeutralButton("OK", null).show();
-                    CreateLogFile.logData.append("Device not rooted\n");
                     break;
                 case -4:
                     new AlertDialog.Builder(MainActivity.this).setTitle("Error")
                             .setMessage("Command error")
                             .setNeutralButton("OK", null).show();
-                    CreateLogFile.logData.append("Command is not correct \n");
                     break;
                 case -5:
                     new AlertDialog.Builder(MainActivity.this).setTitle("Error")
                             .setMessage("outputstream error")
                             .setNeutralButton("OK", null).show();
-                    CreateLogFile.logData.append("OutputStream error\n");
                     break;
                 default:
                     new AlertDialog.Builder(MainActivity.this).setTitle("Error")
                             .setMessage("Unknown error")
                             .setNeutralButton("OK", null).show();
-                    CreateLogFile.logData.append("Unknown error \n");
             }
         } else {
             new AlertDialog.Builder(MainActivity.this)
                     .setTitle("Network connection error")
                     .setMessage(
                             "Network connection error message")
-                    .setPositiveButton("YES",
+                    .setPositiveButton("Open Settings",
                             new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialog,
                                                     int which) {
                                     startActivity(new Intent(
                                             Settings.ACTION_WIRELESS_SETTINGS));
                                 }
-                            }).setNegativeButton("NO", null)
+                            }).setNegativeButton("Cancel", null)
                     .show();
-
-            CreateLogFile.logData.append("Network connection error \n");
         }
     }
 
@@ -328,48 +299,43 @@ public class MainActivity extends ActionBarActivity implements OnClickListener{
             case 0:
                 Toast.makeText(MainActivity.this,"tcpdump stopped",
                         Toast.LENGTH_SHORT).show();
-                CreateLogFile.logData.append(GetTime.getCurrentTime()+"Tcpdump capture stopped");
-                CreateLogFile.logData.append(GetTime.getCurrentTime()+"Pcap File generated at"+ GlobalVariables.chosen_Dir);
+                AlertDialog.Builder alert= new AlertDialog.Builder(this);
+                alert.setMessage(result.toString());
+                alert.show();
+
                 break;
             case -1:
                 Toast.makeText(MainActivity.this,"tcpdump already stopped",
                         Toast.LENGTH_SHORT).show();
-                CreateLogFile.logData.append("Tcpdump capture already stopped\n");
                 break;
             case -2:
                 new AlertDialog.Builder(MainActivity.this)
                         .setTitle("Device not rooted")
                         .setMessage("Device not rooted")
                         .setNeutralButton("OK", null).show();
-                CreateLogFile.logData.append("Device not rooted\n");
                 break;
             case -4:
                 new AlertDialog.Builder(MainActivity.this).setTitle("Error")
                         .setMessage("Command error")
                         .setNeutralButton("OK", null).show();
-                CreateLogFile.logData.append("Command is not correct \n");
             case -5:
                 new AlertDialog.Builder(MainActivity.this).setTitle("Error")
                         .setMessage("output stream error")
                         .setNeutralButton("OK", null).show();
-                CreateLogFile.logData.append("OutputStream error\n");
                 break;
             case -6:
                 new AlertDialog.Builder(MainActivity.this).setTitle("Error")
                         .setMessage("close shell error")
                         .setNeutralButton("OK", null).show();
-                CreateLogFile.logData.append("Close shell Error\n");
                 break;
             case -7:
                 new AlertDialog.Builder(MainActivity.this).setTitle("Error")
                         .setMessage("process finish error")
                         .setNeutralButton("OK", null).show();
-                CreateLogFile.logData.append("Process Finish error error\n");
             default:
                 new AlertDialog.Builder(MainActivity.this).setTitle("Error")
-                        .setMessage("unknown error")
+                        .setMessage("unkmown error")
                         .setNeutralButton("OK", null).show();
-                CreateLogFile.logData.append("Unknown Error \n");
         }
 
     }
@@ -383,6 +349,9 @@ public class MainActivity extends ActionBarActivity implements OnClickListener{
 
             case R.id.stopButton:
                 stopTCPdump();
+                KDDConnection.createConnectionRecord(ProcessDataService.connSet);
+                Intent i = new Intent(this, ProcessDataService.class);
+                stopService(i);
                 break;
         }
     }
