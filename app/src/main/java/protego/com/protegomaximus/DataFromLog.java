@@ -22,8 +22,6 @@ public class DataFromLog {
     String SERVICE;
     // Flags
     Flags FLAGS;
-    // Checksum
-    //int CHECKSUM;
     // CheckedChecksum
     String CHECKSUM_DESC;
 

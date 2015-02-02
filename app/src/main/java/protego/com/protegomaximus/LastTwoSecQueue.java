@@ -22,12 +22,12 @@ public class LastTwoSecQueue {
         if (pastTwoSecConn.size() == 0) {
             pastTwoSecConn.add(newConn);
         }
-        else if ((int) (pastTwoSecConn.get(0).TIMESTAMP - newConn.TIMESTAMP) * 1000 <= 2) {
+        else if ((int) ((pastTwoSecConn.get(0).TIMESTAMP - newConn.TIMESTAMP)/1000) <= 2) {
             pastTwoSecConn.addLast(newConn);
         }
         else {
             // The queue needs to be updated.
-            while ((pastTwoSecConn.size() != 0) && (((pastTwoSecConn.get(0).TIMESTAMP - newConn.TIMESTAMP) * 1000) > 2)) {
+            while ((pastTwoSecConn.size() != 0) && (((pastTwoSecConn.get(0).TIMESTAMP - newConn.TIMESTAMP)/1000) > 2)) {
                 pastTwoSecConn.removeFirst();
             }
             pastTwoSecConn.addLast(newConn);

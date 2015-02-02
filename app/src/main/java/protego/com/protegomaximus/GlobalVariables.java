@@ -25,7 +25,6 @@ public class GlobalVariables {
         connService = null;
         stateHistory = "";          // may be null.
     }
-    //CWR = ECE = URG = ACK = PSH = RST = SYN = FIN
 
     public static void findStateHistory  (Flags flags, String srcIP) {
         // Referred to: https://www.bro.org/sphinx/_downloads/main20.bro

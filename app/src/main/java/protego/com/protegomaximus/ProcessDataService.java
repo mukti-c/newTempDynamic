@@ -25,11 +25,13 @@ public class ProcessDataService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        DataParcel dataParcel = (DataParcel) intent.getParcelableExtra("dataParcel");
-        Log.d(TAG, "Time started: " + System.nanoTime());
-        temp = getPacketData(dataParcel, new DataFromLog());
-        addToConnSet(temp, connSet);
-        Log.d(TAG, "Time finished: " + System.nanoTime());
+        if (intent.hasExtra("dataParcel")) {
+            DataParcel dataParcel = (DataParcel) intent.getParcelableExtra("dataParcel");
+            Log.d(TAG, "Time started: " + System.nanoTime());
+            temp = getPacketData(dataParcel, new DataFromLog());
+            addToConnSet(temp, connSet);
+            Log.d(TAG, "Time finished: " + System.nanoTime());
+        }
         return START_STICKY;
     }
 
@@ -89,6 +91,8 @@ public class ProcessDataService extends Service {
                     GlobalVariables.endTime = data.TIMESTAMP;
                     CreateLogFile.logData.append(GetTime.getCurrentTime()+"Previous connection terminated\n");
                     Log.d("EEEStateHistory", GlobalVariables.stateHistory);
+                    CurrentValuesSnapshot.currentSnapshot();
+                    Log.d("EEEEStateCurr", CurrentValuesSnapshot.stateHistory);
                     KDDConnection.createConnectionRecord(connSet);
                     CreateLogFile.logData.append(GetTime.getCurrentTime()+"Record for the terminated connection created\n");
                     connSet.clear();
@@ -109,7 +113,7 @@ public class ProcessDataService extends Service {
     }
 
     private DataFromLog getPacketData(DataParcel dataParcel, DataFromLog data) {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSSSS");
         sdf.setTimeZone(TimeZone.getDefault());
         try{
             Date date = sdf.parse("1970-01-01 " + dataParcel.hashMap.get(1));
