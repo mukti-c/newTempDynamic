@@ -24,6 +24,12 @@ public class App extends Activity {
     public void installTcpdumpBinary() {
         if(RootTools.installBinary(this, R.raw.tcpdump, "tcpdump")==false)
             Toast.makeText(getApplicationContext(), "Couldn't install tcpdump", Toast.LENGTH_SHORT).show();
+
+        if(RootTools.isBusyboxAvailable()==false)
+            RootTools.offerBusyBox(this);
+        else
+            //Toast.makeText(getApplicationContext(), "Busybox available", Toast.LENGTH_SHORT).show();
+            Log.d ("APP", "Busybox is installed.");
     }
 
     private void copyFile (InputStream in, OutputStream out) {
