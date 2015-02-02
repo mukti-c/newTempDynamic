@@ -18,7 +18,7 @@ public class CreateHashObject {
         Packet.TIMESTAMP=splited[0];
         Packet.FLAG_IP= splited[1];
         Packet.PROTOCOL=splited[2];
-        Packet.DATA_LENGTH=splited[3];
+        Packet.LENGTH=splited[3];
         Packet.SRC_IP=src_ip[0]+"."+src_ip[1]+"."+src_ip[2]+"."+src_ip[3];
         Packet.DEST_IP=dst_ip[0]+"."+dst_ip[1]+"."+dst_ip[2]+"."+dst_ip[3];
         Packet.SRC_PORT=src_ip[4];

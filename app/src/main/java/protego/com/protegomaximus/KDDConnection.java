@@ -96,39 +96,39 @@ public class KDDConnection {
     }
 
     // Creates a connection
-    public static void createConnectionRecord(Set<DataFromLog> logData) {
+    public static void createConnectionRecord(Set<DataFromLog> logData, CurrentValuesSnapshot sp) {
         KDDConnection newConn = new KDDConnection();
         int duration;
         // TIMESTAMP is in milliseconds
-        duration = (int) ((CurrentValuesSnapshot.endTime - CurrentValuesSnapshot.startTime)/1000);
+        duration = (int) ((sp.endTime - sp.startTime)/1000);
         newConn.duration = (duration >= 0)?duration:0;
 
-        newConn.protocol = CurrentValuesSnapshot.connProtocol;
-        newConn.service = CurrentValuesSnapshot.connService;
-        newConn.flag = getFlag(newConn.protocol);
+        newConn.protocol = sp.connProtocol;
+        newConn.service = sp.connService;
+        newConn.flag = getFlag(newConn.protocol, sp.stateHistory);
 
-        if (CurrentValuesSnapshot.connSourceIP.equals(CurrentValuesSnapshot.connDestIP) && CurrentValuesSnapshot.connSourcePort == CurrentValuesSnapshot.connDestPort) {
+        if (sp.connSourceIP.equals(sp.connDestIP) && sp.connSourcePort == sp.connDestPort) {
             newConn.land = 1;
         } else {
             newConn.land = 0;
         }
 
         for (DataFromLog temp1: logData) {
-            newConn.src_bytes += (temp1.SRC_IP.equals(CurrentValuesSnapshot.connSourceIP)) ? temp1.LENGTH : 0;
-            newConn.dst_bytes += (temp1.DEST_IP.equals(CurrentValuesSnapshot.connSourceIP)) ? temp1.LENGTH : 0;
+            newConn.src_bytes += (temp1.SRC_IP.equals(sp.connSourceIP)) ? temp1.LENGTH : 0;
+            newConn.dst_bytes += (temp1.DEST_IP.equals(sp.connSourceIP)) ? temp1.LENGTH : 0;
             newConn.wrong_fragment += (temp1.CHECKSUM_DESC != null && temp1.CHECKSUM_DESC.equals("co")) ? 0 : 1;
             newConn.urgent += (temp1.FLAGS.URG) ? 1 : 0;
         }
 
         // Create ReducedKDDConnection object and pass & add to last100Conn and lastTwoSec
         ReducedKDDConnection tempConn = new ReducedKDDConnection();
-        tempConn.TIMESTAMP = CurrentValuesSnapshot.endTime;
+        tempConn.TIMESTAMP = sp.endTime;
         tempConn.PROTOCOL = newConn.protocol;
         tempConn.SERVICE = newConn.service;
         tempConn.FLAG = newConn.flag;
-        tempConn.DEST_IP = CurrentValuesSnapshot.connDestIP;
-        tempConn.SRC_PORT = CurrentValuesSnapshot.connSourcePort;
-        tempConn.DEST_PORT = CurrentValuesSnapshot.connDestPort;
+        tempConn.DEST_IP = sp.connDestIP;
+        tempConn.SRC_PORT = sp.connSourcePort;
+        tempConn.DEST_PORT = sp.connDestPort;
         newConn = PastConnQueue.calculateTrafficFeatures(tempConn, newConn, GlobalVariables.last100Conn);
         newConn = LastTwoSecQueue.calculateTrafficFeatures(tempConn, newConn, GlobalVariables.lastTwoSec);
         //writeToARFF(ReadFile1.csvFile, newConn);
@@ -138,17 +138,17 @@ public class KDDConnection {
         GlobalVariables.lastTwoSec.addConn(tempConn);
     }
 
-    private static String getFlag (String protocol) {
+    private static String getFlag (String protocol, String stateHistory) {
         // The flag is the state of the flag when the summary was written, ie when the connection terminated
         // 1. http://www.takakura.com/Kyoto_data/BenchmarkData-Description-v3.pdf
         // 2. https://www.bro.org/sphinx/_downloads/main20.bro
         // {OTH,REJ,RSTO,RSTOS0,RSTR,S0,S1,S2,S3,SF,SH}
 
         if (protocol.equals("tcp")) {
-            if (CurrentValuesSnapshot.stateHistory.contains("r")) {
+            if (stateHistory.contains("r")) {
                 // Responder = TCP_RESET
-                if (CurrentValuesSnapshot.stateHistory.length() != 1) {
-                    String temp = CurrentValuesSnapshot.stateHistory.split("r", 2)[0];
+                if (stateHistory.length() != 1) {
+                    String temp = stateHistory.split("r", 2)[0];
                     if (temp != null && (temp.contains("S") // Originator = TCP_SYN_SENT
                             || temp.contains("H") // Originator = TCP_SYN_ACK_SENT
                             || temp.contains("R"))) { // Originator = TCP_RESET
@@ -162,10 +162,10 @@ public class KDDConnection {
                 else return "RSTR";
             }
 
-            else if (CurrentValuesSnapshot.stateHistory.contains("R")) {
+            else if (stateHistory.contains("R")) {
                 // Originator = TCP_RESET
-                if (CurrentValuesSnapshot.stateHistory.length() != 1) {
-                    String temp = CurrentValuesSnapshot.stateHistory.split("R", 2)[1];
+                if (stateHistory.length() != 1) {
+                    String temp = stateHistory.split("R", 2)[1];
                     if (temp != null && !temp.contains("s") && !temp.contains("h") && !temp.contains("i")
                             && !temp.contains("a") && !temp.contains("f") && !temp.contains("r")) {
                         // Originator sent a SYN followed by a RST, but the responder never replied.
@@ -179,14 +179,14 @@ public class KDDConnection {
                 // Statehistory.length = 1, i.e. stateHistory = "R". Originator rejects.
                 else return "RSTOS0";
             }
-            else if (CurrentValuesSnapshot.stateHistory.contains("F") && CurrentValuesSnapshot.stateHistory.contains("f")) {
+            else if (stateHistory.contains("F") && stateHistory.contains("f")) {
                 // Originator = TCP_CLOSED and Responder = TCP_CLOSED
                 return "SF";
             }
-            else if (CurrentValuesSnapshot.stateHistory.contains("F")) {
+            else if (stateHistory.contains("F")) {
                 // Originator = TCP_CLOSED (with finish bit)
-                if (CurrentValuesSnapshot.stateHistory.length() != 1) {
-                    String temp = CurrentValuesSnapshot.stateHistory.split("F", 2)[1];
+                if (stateHistory.length() != 1) {
+                    String temp = stateHistory.split("F", 2)[1];
                     if (temp != null && !temp.contains("s") && !temp.contains("h") && !temp.contains("i")
                             && !temp.contains("a") && !temp.contains("f") && !temp.contains("r")) {
                         // Responder didn't send reply after Originator sends FIN (half open connection)
@@ -202,10 +202,10 @@ public class KDDConnection {
                 // Statehistory.length = 1, no response from responder.
                 else return "S2";
             }
-            else if (CurrentValuesSnapshot.stateHistory.contains("f")) {
+            else if (stateHistory.contains("f")) {
                 // Responder = TCP_CLOSED
-                if (CurrentValuesSnapshot.stateHistory.length() != 1) {
-                    String temp = CurrentValuesSnapshot.stateHistory.split("f", 2)[1];
+                if (stateHistory.length() != 1) {
+                    String temp = stateHistory.split("f", 2)[1];
                     if (temp != null && !temp.contains("S") && !temp.contains("H") && !temp.contains("I")
                             && !temp.contains("A") && !temp.contains("F") && !temp.contains("R")) {
                         // Originator doesn't respond after the Responder sends FIN
@@ -219,9 +219,9 @@ public class KDDConnection {
                     }
                 }
             }
-            else if (CurrentValuesSnapshot.stateHistory.contains("S")) {
-                if (CurrentValuesSnapshot.stateHistory.length() != 1) {
-                    String temp = CurrentValuesSnapshot.stateHistory.split("S", 2)[1];
+            else if (stateHistory.contains("S")) {
+                if (stateHistory.length() != 1) {
+                    String temp = stateHistory.split("S", 2)[1];
                     if (temp != null && !temp.contains("s") && !temp.contains("h") && !temp.contains("i")
                             && !temp.contains("a") && !temp.contains("f") && !temp.contains("r")) {
                         // Originator = SYN_SENT and responder = TCP_INACTIVE
@@ -235,7 +235,7 @@ public class KDDConnection {
                 // Statehistory.length = 1
                 return "S0";
             }
-            else if (CurrentValuesSnapshot.stateHistory.contains("H") || CurrentValuesSnapshot.stateHistory.contains("h")) {
+            else if (stateHistory.contains("H") || stateHistory.contains("h")) {
                 // Originator = TCP_ESTABLISHED and responder = TCP_ESTABLISHED
                 return "S1";
             }

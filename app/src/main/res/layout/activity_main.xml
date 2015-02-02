@@ -10,8 +10,6 @@
         android:layout_height="match_parent"
         android:id="@+id/main_frame">
 
-
-
         <RelativeLayout
             xmlns:android="http://schemas.android.com/apk/res/android"
             xmlns:tools="http://schemas.android.com/tools"
@@ -29,22 +27,13 @@
                 android:textColorHighlight="#fffbff20"
                 android:focusable="true" />
 
-            <EditText
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/editTextView"
-                android:height="20dp"
-                android:textColor="#ff0a1973"
-                android:layout_above="@+id/startButton"
-                android:layout_below="@+id/textView" />
-
             <Button
                 android:layout_width="169dp"
                 android:layout_height="wrap_content"
                 android:text="@string/startCapture"
                 android:id="@+id/startButton"
-                android:layout_below="@+id/textView"
                 android:textColor="#ff0a1973"
+                android:layout_below="@+id/textView"
                 android:layout_centerHorizontal="true" />
 
             <Button
@@ -52,26 +41,17 @@
                 android:layout_height="wrap_content"
                 android:text="@string/stopCapture"
                 android:id="@+id/stopButton"
+                android:textColor="#ff0a1973"
                 android:layout_below="@+id/startButton"
-                android:textColor="#ff0a1973"
                 android:layout_centerHorizontal="true" />
 
             <Button
                 android:layout_width="169dp"
                 android:layout_height="wrap_content"
-                android:text="Create CSV File"
-                android:id="@+id/btnExtractFeatures"
+                android:id="@+id/eval"
+                android:text="Evaluate Model"
+                android:textColor="#ff0a1973"
                 android:layout_below="@+id/stopButton"
-                android:textColor="#ff0a1973"
-                android:layout_centerHorizontal="true" />
-
-            <Button
-                android:layout_width="169dp"
-                android:layout_height="wrap_content"
-                android:text="Classify!"
-                android:id="@+id/btnClassify"
-                android:layout_below="@+id/btnExtractFeatures"
-                android:textColor="#ff0a1973"
                 android:layout_centerHorizontal="true" />
 
         </RelativeLayout>

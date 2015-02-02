@@ -15,13 +15,8 @@ import java.util.TimeZone;
 public class ProcessDataService extends Service {
 
     private static final String TAG = "ProcessDataService";
-    //private final static String filename = Environment.getExternalStorageDirectory().getAbsoluteFile() + File.separator + "tcpdump.pcap";
-    //public final static String csvFile = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + "connection.csv";
     public Set<DataFromLog> connSet = null;
     public DataFromLog temp = null;
-
-    //public ProcessDataService() {
-        //super("ProcessDataService");
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -45,7 +40,8 @@ public class ProcessDataService extends Service {
     public void onDestroy() {
         super.onDestroy();
         Log.d ("DE", "destroy");
-        KDDConnection.createConnectionRecord(connSet);
+        CurrentValuesSnapshot sp = CurrentValuesSnapshot.currentSnapshot();
+        KDDConnection.createConnectionRecord(connSet, sp);
         connSet.clear();
         GlobalVariables.clearVar();
     }
@@ -78,7 +74,7 @@ public class ProcessDataService extends Service {
                 GlobalVariables.endTime = data.TIMESTAMP;
                 GlobalVariables.findStateHistory(data.FLAGS, data.SRC_IP);
                 connSet.add(data);
-                CreateLogFile.logData.append(GetTime.getCurrentTime()+"New Connection set created.\nOngoing Connection.\n");
+                CreateLogFile.logData.append(GetTime.getCurrentTime()+": New Connection set created.\nOngoing Connection.\n");
             } else {
                 if (GlobalVariables.connProtocol.equals(data.PROTOCOL)
                         && GlobalVariables.connService.equals(data.SERVICE)
@@ -89,12 +85,12 @@ public class ProcessDataService extends Service {
                     connSet.add(data);
                 } else {
                     GlobalVariables.endTime = data.TIMESTAMP;
-                    CreateLogFile.logData.append(GetTime.getCurrentTime()+"Previous connection terminated\n");
+                    CreateLogFile.logData.append(GetTime.getCurrentTime()+": Previous connection terminated\n");
                     Log.d("EEEStateHistory", GlobalVariables.stateHistory);
-                    CurrentValuesSnapshot.currentSnapshot();
-                    Log.d("EEEEStateCurr", CurrentValuesSnapshot.stateHistory);
-                    KDDConnection.createConnectionRecord(connSet);
-                    CreateLogFile.logData.append(GetTime.getCurrentTime()+"Record for the terminated connection created\n");
+                    CurrentValuesSnapshot sp = CurrentValuesSnapshot.currentSnapshot();
+                    Log.d("EEEEStateCurr", sp.stateHistory);
+                    KDDConnection.createConnectionRecord(connSet, sp);
+                    CreateLogFile.logData.append(GetTime.getCurrentTime()+": Record for the terminated connection created\n");
                     connSet.clear();
                     GlobalVariables.clearVar();
                     GlobalVariables.startTime = data.TIMESTAMP;
@@ -106,7 +102,7 @@ public class ProcessDataService extends Service {
                     GlobalVariables.connDestPort = data.DEST_PORT;
                     GlobalVariables.findStateHistory(data.FLAGS, data.SRC_IP);
                     connSet.add(data);
-                    CreateLogFile.logData.append(GetTime.getCurrentTime()+"New Connection set created\n");
+                    CreateLogFile.logData.append(GetTime.getCurrentTime()+": New Connection set created\n");
                 }
             }
         }
@@ -121,10 +117,6 @@ public class ProcessDataService extends Service {
         } catch (ParseException p) {
             data.TIMESTAMP = 0;
         }
-        data.SRC_IP = dataParcel.hashMap.get(5);
-        data.DEST_IP = dataParcel.hashMap.get(6);
-        data.SRC_PORT = Integer.parseInt(dataParcel.hashMap.get(7));
-        data.DEST_PORT = Integer.parseInt(dataParcel.hashMap.get(8));
         data.PROTOCOL = dataParcel.hashMap.get(3).toLowerCase();
         if (dataParcel.hashMap.get(4) != null && dataParcel.hashMap.get(11) != null) {
             data.LENGTH = Integer.parseInt(dataParcel.hashMap.get(4)) + Integer.parseInt(dataParcel.hashMap.get(11));
@@ -137,9 +129,13 @@ public class ProcessDataService extends Service {
                 data.LENGTH = 0;
             }
         }
+        data.SRC_IP = dataParcel.hashMap.get(5);
+        data.DEST_IP = dataParcel.hashMap.get(6);
+        data.SRC_PORT = Integer.parseInt(dataParcel.hashMap.get(7));
+        data.DEST_PORT = Integer.parseInt(dataParcel.hashMap.get(8));
+        data.FLAGS = extractFlags(dataParcel.hashMap.get(9));
         data.CHECKSUM_DESC = dataParcel.hashMap.get(10);
         data.SERVICE = (data.PROTOCOL.equals("icmp"))? DataFromLog.assignIcmpService(data.PROTOCOL, data.SRC_PORT, data.DEST_PORT):DataFromLog.assignService(data);
-        data.FLAGS = extractFlags(dataParcel.hashMap.get(9));
         return data;
     }
 

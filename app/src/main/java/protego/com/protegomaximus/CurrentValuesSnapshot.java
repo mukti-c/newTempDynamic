@@ -11,15 +11,17 @@ public class CurrentValuesSnapshot {
     public static String connService = null;
     public static String stateHistory = "";
 
-    public static void currentSnapshot() {
-        startTime = GlobalVariables.startTime;
-        endTime = GlobalVariables.endTime;
-        connSourceIP = GlobalVariables.connSourceIP;
-        connDestIP = GlobalVariables.connDestIP;
-        connSourcePort = GlobalVariables.connSourcePort;
-        connDestPort = GlobalVariables.connDestPort;
-        connProtocol = GlobalVariables.connProtocol;
-        connService = GlobalVariables.connService;
-        stateHistory = GlobalVariables.stateHistory;
+    public static CurrentValuesSnapshot currentSnapshot() {
+        CurrentValuesSnapshot c = new CurrentValuesSnapshot();
+        c.startTime = GlobalVariables.startTime;
+        c.endTime = GlobalVariables.endTime;
+        c.connSourceIP = GlobalVariables.connSourceIP;
+        c.connDestIP = GlobalVariables.connDestIP;
+        c.connSourcePort = GlobalVariables.connSourcePort;
+        c.connDestPort = GlobalVariables.connDestPort;
+        c.connProtocol = GlobalVariables.connProtocol;
+        c.connService = GlobalVariables.connService;
+        c.stateHistory = GlobalVariables.stateHistory;
+        return c;
     }
 }
