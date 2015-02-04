@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/ProtegoMaximus.iml" filepath="$PROJECT_DIR$/ProtegoMaximus.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/newTempDynamic.iml" filepath="$PROJECT_DIR$/newTempDynamic.iml" />
     </modules>
   </component>
 </project>

@@ -64,6 +64,17 @@
         </activity>
 
         <service android:name=".ProcessDataService" />
+
+        <receiver android:name=".NotificationBroadcastReciever">
+            <intent-filter>
+                <action android:name="com.Protego.CUSTOM_INTENT">
+                </action>
+            </intent-filter>
+        </receiver>
+
     </application>
+
+
+
 
 </manifest>

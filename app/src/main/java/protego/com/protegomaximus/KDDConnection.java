@@ -14,10 +14,13 @@ import java.util.Set;
 
 public class KDDConnection {
 
+
     // Features as described in the KDD Cup '99 Documentation
     // List of features and descriptions at: http://www.sc.ehu.es/acwaldap/gureKddcup/README.pdf
 
     // Intrinsic features
+    static int  record =0;
+
     int duration = 0;
     String protocol = null;
     String service = null;
@@ -134,6 +137,20 @@ public class KDDConnection {
         //writeToARFF(ReadFile1.csvFile, newConn);
         Log.d("EEERecord", newConn.convertRecord());
         Log.d("EEEClassify", Tranny.classify(newConn.convertRecord()));
+
+        if(Tranny.classify(newConn.convertRecord()).contains("anomaly"))
+            GlobalVariables.anomalyDetected = true;
+
+
+
+        Log.e("AnomalyDetected",String.valueOf(GlobalVariables.anomalyDetected));
+
+
+
+        record++;
+        MainActivity.resultTextView.setText(Tranny.classify(newConn.convertRecord())+" "+ String.valueOf(record));
+
+
         GlobalVariables.last100Conn.addConn(tempConn);
         GlobalVariables.lastTwoSec.addConn(tempConn);
     }

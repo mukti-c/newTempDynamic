@@ -91,6 +91,15 @@ public class ProcessDataService extends Service {
                     CurrentValuesSnapshot sp = CurrentValuesSnapshot.currentSnapshot();
                     Log.d("EEEEStateCurr", sp.stateHistory);
                     KDDConnection.createConnectionRecord(connSet, sp);
+                    if(GlobalVariables.anomalyDetected==true)
+                    {
+
+                        Intent intent = new Intent();
+                        intent.setAction("com.Protego.CUSTOM_INTENT");
+                        sendBroadcast(intent);
+                        GlobalVariables.anomalyDetected=false;
+
+                    }
                     CreateLogFile.logData.append(GetTime.getCurrentTime()+": Record for the terminated connection created\n");
                     connSet.clear();
                     GlobalVariables.clearVar();

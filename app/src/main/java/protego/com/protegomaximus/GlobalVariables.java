@@ -15,6 +15,7 @@ public class GlobalVariables {
     public static String chosen_Dir="";
     public static int numPacketsReceived = 0;
     public static int numPacketsProcessed = 0;
+    public static Boolean anomalyDetected =false;
 
     public static void clearVar() {
         startTime = 0;

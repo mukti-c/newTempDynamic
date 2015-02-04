@@ -18,6 +18,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends ActionBarActivity implements OnClickListener{
@@ -30,6 +31,7 @@ public class MainActivity extends ActionBarActivity implements OnClickListener{
     int chosen_dir_changed =0;
     TCPdump tcpdump;
     TCPdumpHandler tcpDumpHandler;
+    public static TextView resultTextView;
 
     DrawerLayout drawer;
     ListView drawerList;
@@ -101,6 +103,7 @@ public class MainActivity extends ActionBarActivity implements OnClickListener{
         stopButton.setOnClickListener(this);
         startButton.setOnClickListener(this);
         eval.setOnClickListener(this);
+        resultTextView= (TextView) findViewById(R.id.ResultTextView);
     }
 
     public  void showDirectoryDialog() {
