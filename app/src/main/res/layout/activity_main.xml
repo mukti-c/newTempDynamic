@@ -54,6 +54,18 @@
                 android:layout_below="@+id/stopButton"
                 android:layout_centerHorizontal="true" />
 
+            <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="Result"
+                android:id="@+id/ResultTextView"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true"
+                android:layout_marginBottom="83dp"
+                android:textColor="#ff87d3ff"
+                android:textColorHighlight="#fffbff20"/>
+
         </RelativeLayout>
         </FrameLayout>
             <ListView
