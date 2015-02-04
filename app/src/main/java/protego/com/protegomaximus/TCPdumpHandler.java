@@ -56,6 +56,7 @@ public class TCPdumpHandler {
                     if (outputText.length() + buffer.length >= bufferSize)
                         outputText.setText("");
                         outputText.append(new String(buffer));
+                        GlobalVariables.numPacketsReceived++;
                         checkBufferValue= new String(buffer);
                         DataParcel data = new DataParcel();
                         data.hashMap = CreateHashObject.createObject(checkBufferValue);

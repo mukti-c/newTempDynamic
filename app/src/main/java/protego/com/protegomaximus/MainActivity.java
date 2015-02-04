@@ -235,6 +235,8 @@ public class MainActivity extends ActionBarActivity implements OnClickListener{
                 stopTCPdump();
                 Intent i = new Intent(this, ProcessDataService.class);
                 stopService(i);
+                Log.d ("Packets received: ", ""+GlobalVariables.numPacketsReceived);
+                Log.d ("Packets processed: ", ""+GlobalVariables.numPacketsProcessed);
                 break;
 
             case R.id.eval:

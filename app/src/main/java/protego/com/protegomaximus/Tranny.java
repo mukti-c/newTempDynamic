@@ -1,6 +1,7 @@
 package protego.com.protegomaximus;
 
 import android.os.Environment;
+import android.util.Log;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -20,6 +21,7 @@ import weka.core.converters.ArffLoader;
 public class Tranny {
 
     static String trainingSet = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + "kddreduced.arff";
+    static String trainingSet2 = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + "kddreduced2.arff";
     //String csvFile = Environment.getExternalStorageDirectory().getAbsoluteFile() + File.separator + "connection.csv";
     static String modelFile = Environment.getExternalStorageDirectory().getAbsolutePath()  + File.separator + "model.txt";
     static Instances instances;
@@ -91,15 +93,15 @@ public class Tranny {
 
     //Evalutes the built Classifier model
     public String evaluate () {
-
+        Log.d ("EVAL", "In evaluate");
         String [] options = new String[2];
         options[0] = "-t";
-        options[1] = trainingSet;
+        options[1] = trainingSet2;
 
         String out = null;
 
         try {
-            out = Evaluation.evaluateModel(classifier, options);
+           out = Evaluation.evaluateModel(classifier, options);
         } catch (Exception e) {
             e.printStackTrace();
         }

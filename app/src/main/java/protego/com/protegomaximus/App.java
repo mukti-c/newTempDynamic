@@ -80,6 +80,8 @@ public class App extends Activity {
                 // Clears the queue
                 GlobalVariables.lastTwoSec.clear();
             }
+            GlobalVariables.numPacketsProcessed = 0;
+            GlobalVariables.numPacketsReceived = 0;
 
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(App.this);
             if (!prefs.getBoolean("isClassifierBuilt", false)) {

@@ -16,7 +16,10 @@ public class EvaluateMain extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.evaluate_main);
         filecon = (TextView) findViewById(R.id.filecon);
-        new EvalTask().execute();
+        Tranny t1 = new Tranny();
+        out = t1.evaluate();
+        filecon.setText(out);
+        //new EvalTask().execute();
     }
 
     private class EvalTask extends AsyncTask<Void, Void, Void> {

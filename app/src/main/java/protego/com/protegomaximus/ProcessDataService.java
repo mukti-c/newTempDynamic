@@ -20,7 +20,8 @@ public class ProcessDataService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        if (intent.hasExtra("dataParcel")) {
+        if (intent != null && intent.hasExtra("dataParcel")) {
+            GlobalVariables.numPacketsProcessed++;
             DataParcel dataParcel = (DataParcel) intent.getParcelableExtra("dataParcel");
             Log.d(TAG, "Time started: " + System.nanoTime());
             temp = getPacketData(dataParcel, new DataFromLog());

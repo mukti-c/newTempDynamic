@@ -13,6 +13,8 @@ public class GlobalVariables {
     public static String connService = null;
     public static String stateHistory = "";
     public static String chosen_Dir="";
+    public static int numPacketsReceived = 0;
+    public static int numPacketsProcessed = 0;
 
     public static void clearVar() {
         startTime = 0;

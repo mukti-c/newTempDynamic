@@ -15,17 +15,17 @@ public class CreateHashObject {
         String[] src_ip= splited[4].split(Pattern.quote("."));
         String[] dst_ip= splited[5].split(Pattern.quote("."));
 
-        Packet.TIMESTAMP=splited[0];
-        Packet.FLAG_IP= splited[1];
-        Packet.PROTOCOL=splited[2];
-        Packet.LENGTH=splited[3];
-        Packet.SRC_IP=src_ip[0]+"."+src_ip[1]+"."+src_ip[2]+"."+src_ip[3];
-        Packet.DEST_IP=dst_ip[0]+"."+dst_ip[1]+"."+dst_ip[2]+"."+dst_ip[3];
-        Packet.SRC_PORT=src_ip[4];
-        Packet.DEST_PORT=dst_ip[4];
-        Packet.FLAG_TCP=splited[6];
-        Packet.CHECKSUM=splited[7];
-        Packet.DATA_LENGTH=splited[8];
+        Packet.TIMESTAMP = splited[0];
+        Packet.FLAG_IP = splited[1];
+        Packet.PROTOCOL = splited[2];
+        Packet.LENGTH = splited[3];
+        Packet.SRC_IP = src_ip[0]+"."+src_ip[1]+"."+src_ip[2]+"."+src_ip[3];
+        Packet.DEST_IP = dst_ip[0]+"."+dst_ip[1]+"."+dst_ip[2]+"."+dst_ip[3];
+        Packet.SRC_PORT = src_ip[4];
+        Packet.DEST_PORT = dst_ip[4];
+        Packet.FLAG_TCP = splited[6];
+        Packet.CHECKSUM = splited[7];
+        Packet.DATA_LENGTH = splited[8];
 
         HashMap<Integer,String> hash = new HashMap<>();
         hash.put(1,Packet.TIMESTAMP);
