@@ -25,7 +25,7 @@ public class TCPdumpHandler extends Service {
 
 
     private static final int defaultRefreshRate = 100;
-    private static final int defaultBufferSize = 80;
+    private static final int defaultBufferSize = 81;
 
     // Your Main activity's ids for the View.
 
