@@ -145,7 +145,7 @@ public class ProcessDataService extends Service {
         data.DEST_PORT = Integer.parseInt(dataParcel.hashMap.get(8));
         data.FLAGS = extractFlags(dataParcel.hashMap.get(9));
         data.CHECKSUM_DESC = dataParcel.hashMap.get(10);
-        data.SERVICE = (data.PROTOCOL.equals("icmp"))? DataFromLog.assignIcmpService(data.PROTOCOL, data.SRC_PORT, data.DEST_PORT):DataFromLog.assignService(data);
+        data.SERVICE = (data.PROTOCOL.equals("icm"))? DataFromLog.assignIcmpService(data.PROTOCOL, data.SRC_PORT, data.DEST_PORT):DataFromLog.assignService(data);
         return data;
     }
 
