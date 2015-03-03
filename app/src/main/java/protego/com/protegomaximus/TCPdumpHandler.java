@@ -1,22 +1,31 @@
 package protego.com.protegomaximus;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.Service;
+import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Build;
 import android.os.Handler;
+import android.os.IBinder;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.IOException;
 
 
-public class TCPdumpHandler {
+public class TCPdumpHandler extends Service {
 
 
     private static final int defaultRefreshRate = 100;
-    private static final int defaultBufferSize = 80;
+    private static final int defaultBufferSize = 83;
 
     // Your Main activity's ids for the View.
 
@@ -31,8 +40,6 @@ public class TCPdumpHandler {
     private boolean refreshingActive = false;
     private TCPdump tcpdump = null;
     private Handler isHandler = null;
-    private Context mContext = null;
-    private TextView outputText = null;
     String checkBufferValue;
     StringBuilder result = new StringBuilder();
 
@@ -53,17 +60,17 @@ public class TCPdumpHandler {
                     }
 
                     // Clears the screen if it's full.
-                    if (outputText.length() + buffer.length >= bufferSize)
-                        outputText.setText("");
-                        outputText.append(new String(buffer));
-                        GlobalVariables.numPacketsReceived++;
-                        checkBufferValue= new String(buffer);
-                        DataParcel data = new DataParcel();
-                        data.hashMap = CreateHashObject.createObject(checkBufferValue);
-                        Intent intent = new Intent(mContext, ProcessDataService.class);
-                        intent.putExtra("dataParcel", data);
-                        mContext.startService(intent);
-                        Log.d ("LOG",checkBufferValue);
+                    if (MainActivity.outputText.length() + buffer.length >= bufferSize)
+                        MainActivity.outputText.setText("");
+                    MainActivity.outputText.append(new String(buffer));
+                    GlobalVariables.numPacketsReceived++;
+                    checkBufferValue= new String(buffer);
+                    DataParcel data = new DataParcel();
+                    data.hashMap = CreateHashObject.createObject(checkBufferValue);
+                    Intent intent = new Intent(TCPdumpHandler.this, ProcessDataService.class);
+                    intent.putExtra("dataParcel", data);
+                    startService(intent);
+                    Log.d ("LOG",checkBufferValue);
                     result.append(new String(buffer));
                 }
             } catch (IOException e) {
@@ -74,14 +81,7 @@ public class TCPdumpHandler {
         }
     };
 
-    public TCPdumpHandler(TCPdump tcpdump, Context mContext, Activity activity,
-                          StringBuilder result) {
-        this.tcpdump = tcpdump;
-        isHandler = new Handler();
-        this.outputText = (TextView) activity.findViewById(outputId);
-        this.mContext = mContext;
-        this.result=result;
-    }
+
 
     /**
      * Starts a TCPdump process, enables refreshing and posts a notification.
@@ -100,7 +100,7 @@ public class TCPdumpHandler {
     public int start(String params) {
         int TCPdumpReturn;
         if ((TCPdumpReturn = tcpdump.start(params)) == 0) {
-            outputText.setText("standard output enabled");
+            MainActivity.outputText.setText("standard output enabled");
             startRefreshing();
             return 0;
         } else
@@ -195,7 +195,7 @@ public class TCPdumpHandler {
     public boolean checkNetworkStatus() {
 
         // Variables used for checking the network state.
-        final ConnectivityManager connMgr = (ConnectivityManager) mContext
+        final ConnectivityManager connMgr = (ConnectivityManager) this
                 .getSystemService(Context.CONNECTIVITY_SERVICE);
 
         final NetworkInfo wifi = connMgr
@@ -209,6 +209,134 @@ public class TCPdumpHandler {
         } else
             return false;
     }
+
+    @Override
+    public IBinder onBind(Intent intent) {
+        return null;
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+
+        tcpdump = new TCPdump();
+        isHandler = new Handler();
+        //this.outputText = (TextView) activity.findViewById(outputId);
+
+    }
+    @Override
+    public int onStartCommand(Intent intent,int flags,int startId)
+    {
+
+        if (checkNetworkStatus()) {
+
+            switch (start(MainActivity.parameters.toString())) {
+                case 0:
+                    Toast.makeText(this, "tcpdump started",
+                            Toast.LENGTH_SHORT).show();
+                    //AlertDialog.Builder alert= new AlertDialog.Builder(this);
+                    //alert.setMessage(result.toString());
+                    //alert.show();
+                    break;
+                case -1:
+                    Toast.makeText(this,
+                            "tcpdump already started",
+                            Toast.LENGTH_SHORT).show();
+                    break;
+                case -2:
+
+
+                    buildNotification("Error!!","Device not rooted");
+                    break;
+                case -4:
+
+
+                    buildNotification("Error!!","Command error");
+                    break;
+                case -5:
+
+
+                    buildNotification("Error!!","OutputStream error");
+                    break;
+                default:
+                    buildNotification("Error!!","Unknown error");
+            }
+        } else {
+            buildNotification("Error!!","NetworkCommection error");
+
+        }
+
+        return START_STICKY;
+    }
+
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        switch (stop()) {
+            case 0:
+                Toast.makeText(this,"tcpdump stopped",
+                        Toast.LENGTH_SHORT).show();
+                buildNotification("Result","tcpdump successfully executed");
+                break;
+            case -1:
+                Toast.makeText(this,"tcpdump already stopped",
+                        Toast.LENGTH_SHORT).show();
+                break;
+            case -2:
+                buildNotification("Error!!","Device not rooted");
+                break;
+            case -4:
+                buildNotification("Error!!","Command error");
+            case -5:
+                buildNotification("Error!!","OutputStream error");
+                break;
+            case -6:
+                buildNotification("Error!!","Close shell error");
+                break;
+            case -7:
+                buildNotification("Error!!","Process finish error");
+            default:
+                buildNotification("Error!!","Unknown error");
+        }
+
+    }
+
+
+
+
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
+    public void buildNotification(String message,String title)
+    {
+
+        NotificationCompat.Builder  mBuilder =
+                new NotificationCompat.Builder(this);
+        mBuilder.setAutoCancel(true);
+        mBuilder.setSmallIcon(R.drawable.ic_launcher);
+        mBuilder.setContentTitle(title);
+        mBuilder.setContentText(message);
+        // mBuilder.setNumber(notification_number);
+        Intent resultIntent = new Intent(this,MainActivity.class);
+
+        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+        stackBuilder.addParentStack(MainActivity.class);
+        stackBuilder.addNextIntent(resultIntent);
+        PendingIntent resultPendingIntent =
+                stackBuilder.getPendingIntent(
+                        0,
+                        PendingIntent.FLAG_UPDATE_CURRENT
+                );
+
+        mBuilder.setContentIntent(resultPendingIntent);
+        NotificationManager mNotificationManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
+
+
+        mNotificationManager.notify(0 ,mBuilder.build());
+    }
+
+
+
 
     /**
      * Generates the parameters that TCPdump will use by reading the options and

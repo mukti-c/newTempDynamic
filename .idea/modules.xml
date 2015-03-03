@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/ProtegoMaximus.iml" filepath="$PROJECT_DIR$/ProtegoMaximus.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ProtegoDynamic1.iml" filepath="$PROJECT_DIR$/ProtegoDynamic1.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/newTempDynamic.iml" filepath="$PROJECT_DIR$/newTempDynamic.iml" />
     </modules>
