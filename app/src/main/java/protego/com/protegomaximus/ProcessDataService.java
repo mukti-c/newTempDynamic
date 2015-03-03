@@ -100,6 +100,14 @@ public class ProcessDataService extends Service {
                         GlobalVariables.anomalyDetected=false;
 
                     }
+                    else if(GlobalVariables.torrent==true )
+                    {
+                        Intent intent = new Intent();
+                        intent.setAction("com.Protego.CUSTOM_INTENT");
+                        sendBroadcast(intent);
+                        GlobalVariables.torrent=false;
+
+                    }
                     CreateLogFile.logData.append(GetTime.getCurrentTime()+": Record for the terminated connection created\n");
                     connSet.clear();
                     GlobalVariables.clearVar();

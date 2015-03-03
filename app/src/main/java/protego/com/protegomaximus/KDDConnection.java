@@ -138,12 +138,17 @@ public class KDDConnection {
         Log.d("EEERecord", newConn.convertRecord());
         Log.d("EEEClassify", Tranny.classify(newConn.convertRecord()));
 
-        if(Tranny.classify(newConn.convertRecord()).contains("anomaly"))
+        if(Tranny.classify(newConn.convertRecord()).contains("anomaly")) {
             GlobalVariables.anomalyDetected = true;
+            Log.e("AnomalyDetected", String.valueOf(GlobalVariables.anomalyDetected));
+        }
+        else if(Tranny.classify(newConn.convertRecord()).contains("torrent")) {
+            GlobalVariables.torrent = true;
+            Log.e("Torrent", String.valueOf(GlobalVariables.torrent));
+
+        }
 
 
-
-        Log.e("AnomalyDetected",String.valueOf(GlobalVariables.anomalyDetected));
 
 
 
