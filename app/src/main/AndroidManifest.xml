@@ -64,7 +64,6 @@
         </activity>
 
         <service android:name=".ProcessDataService" />
-        <service android:name=".TCPdumpHandler" />
 
         <receiver android:name=".NotificationBroadcastReciever">
             <intent-filter>
